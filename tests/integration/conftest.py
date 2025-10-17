@@ -4,6 +4,7 @@ Provides shared fixtures for API testing with localhost server
 """
 
 import os
+import shutil
 import time
 from pathlib import Path
 from typing import Generator, Optional
@@ -22,6 +23,9 @@ JOB_POLL_INTERVAL = 2  # seconds between polls
 # Test Fixtures Directory
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
+
+TEST_OUTPUTS_DIR = Path(__file__).parent / "test_outputs"
+TEST_OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.fixture(scope="session")
@@ -110,8 +114,14 @@ def cleanup_outputs() -> Generator[list, None, None]:
 
 	# Cleanup after test
 	for file_path in output_files:
-		if Path(file_path).exists():
-			Path(file_path).unlink()
+		path = Path(file_path)
+		if path.exists():
+			try:
+				destination = TEST_OUTPUTS_DIR / path.name
+				shutil.copy2(path, destination)
+			except Exception:
+				pass
+			path.unlink()
 
 
 def _create_placeholder_image(path: Path, text: str, size: tuple[int, int]) -> None:
