@@ -479,6 +479,7 @@ async def delete_output(filename: str):
 def launch_api(host: str = "0.0.0.0", port: int = 8000):
 	"""Launch the FastAPI server"""
 	import uvicorn
+	state_manager.init_item('log_level', 'info')
 	print(f"[FACEFUSION.API] Starting FastAPI server on {host}:{port}")
 	print(f"[FACEFUSION.API] API docs available at http://{host}:{port}/docs")
 	uvicorn.run(app, host=host, port=port)
