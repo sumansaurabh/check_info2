@@ -17,7 +17,7 @@ from facefusion.env_helper import load_env
 
 load_env()
 
-from facefusion import logger, state_manager, wording  # noqa: E402
+from facefusion import choices, logger, state_manager, wording  # noqa: E402
 from facefusion.api_job_store import (  # noqa: E402
 	create_job,
 	get_job,
@@ -38,8 +38,8 @@ init_db()
 # Pydantic models for request/response
 class ProcessRequest(BaseModel):
 	"""Request model for processing operations"""
-	processors: List[str] = Field(default=["face_swapper"], description="List of processors to apply")
-	execution_providers: List[str] = Field(default=["cpu"], description="Execution providers (cpu, cuda, etc.)")
+	processors: List[str] = Field(default_factory=lambda: ["face_swapper"], description="List of processors to apply")
+	execution_providers: List[str] = Field(default_factory=lambda: ["cpu"], description="Execution providers (cpu, cuda, etc.)")
 	execution_thread_count: int = Field(default=1, ge=1, le=32, description="Number of execution threads")
 	output_video_fps: Optional[float] = Field(default=None, description="Output video FPS")
 	output_image_scale: int = Field(default=100, ge=10, le=400, description="Output image scale percentage")
@@ -117,10 +117,21 @@ def cleanup_file(file_path: str) -> None:
 
 
 SOURCE_REQUIRED_PROCESSORS = { "face_swapper" }
+DEFAULT_LOG_LEVEL = 'info'
 
 
-def processors_require_source(processors: List[str]) -> bool:
+def processors_require_source(processors: Optional[List[str]]) -> bool:
+	if not processors:
+		return False
 	return any(processor in SOURCE_REQUIRED_PROCESSORS for processor in processors)
+
+
+def init_logger() -> None:
+	log_level = state_manager.get_item('log_level')
+	if isinstance(log_level, str) and log_level in choices.log_level_set:
+		logger.init(log_level)
+	else:
+		logger.init(DEFAULT_LOG_LEVEL)
 
 
 def map_job_status(job: dict) -> JobStatus:
@@ -132,10 +143,10 @@ def map_job_status(job: dict) -> JobStatus:
 	)
 
 
-def execute_job(job_id: str, job_type: str, step_args: Args, target_path: str, source_path: Optional[str], log_level: str) -> None:
+def execute_job(job_id: str, job_type: str, step_args: Args, target_path: str, source_path: Optional[str]) -> None:
 	"""Execute a queued job and maintain status lifecycle."""
 	try:
-		logger.init(log_level)
+		init_logger()
 		logger.info(f"[FACEFUSION.API] Running {job_type} job {job_id}", __name__)
 		update_job_status(job_id, "running")
 
@@ -233,13 +244,14 @@ async def process_image(
 	job_queued = False
 
 	try:
-		logger.init(state_manager.get_item('log_level'))
+		init_logger()
 
 		target_path = save_upload_file(target)
 		if not is_image(target_path):
 			raise HTTPException(status_code=400, detail="Target file is not a valid image")
 
-		if processors_require_source(request.processors) and source is None:
+		processors = request.processors or ["face_swapper"]
+		if processors_require_source(processors) and source is None:
 			raise HTTPException(status_code=400, detail="Source file is required for the selected processors")
 
 		source_paths: List[str] = []
@@ -256,8 +268,8 @@ async def process_image(
 			'source_paths': source_paths,
 			'target_path': target_path,
 			'output_path': output_path,
-			'processors': request.processors,
-			'execution_providers': request.execution_providers,
+			'processors': processors,
+			'execution_providers': request.execution_providers or ["cpu"],
 			'execution_thread_count': request.execution_thread_count,
 			'output_image_scale': request.output_image_scale,
 			'face_detector_model': request.face_detector_model,
@@ -295,8 +307,7 @@ async def process_image(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-		log_level = state_manager.get_item('log_level') or 'info'
-		background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path, log_level)
+		background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
 
@@ -337,13 +348,14 @@ async def process_video(
 	job_queued = False
 
 	try:
-		logger.init(state_manager.get_item('log_level'))
+		init_logger()
 
 		target_path = save_upload_file(target)
 		if not is_video(target_path):
 			raise HTTPException(status_code=400, detail="Target file is not a valid video")
 
-		if processors_require_source(request.processors) and source is None:
+		processors = request.processors or ["face_swapper"]
+		if processors_require_source(processors) and source is None:
 			raise HTTPException(status_code=400, detail="Source file is required for the selected processors")
 
 		source_paths: List[str] = []
@@ -360,8 +372,8 @@ async def process_video(
 			'source_paths': source_paths,
 			'target_path': target_path,
 			'output_path': output_path,
-			'processors': request.processors,
-			'execution_providers': request.execution_providers,
+			'processors': processors,
+			'execution_providers': request.execution_providers or ["cpu"],
 			'execution_thread_count': request.execution_thread_count,
 			'output_video_scale': request.output_video_scale,
 			'output_video_fps': request.output_video_fps,
@@ -400,8 +412,7 @@ async def process_video(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-		log_level = state_manager.get_item('log_level') or 'info'
-		background_tasks.add_task(execute_job, job_id, "video", step_args, target_path, source_path, log_level)
+		background_tasks.add_task(execute_job, job_id, "video", step_args, target_path, source_path)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
 
