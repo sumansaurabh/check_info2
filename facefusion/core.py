@@ -143,8 +143,9 @@ def common_pre_check() -> bool:
 
 	content_analyser_content = inspect.getsource(content_analyser).encode()
 	content_analyser_hash = hash_helper.create_hash(content_analyser_content)
-	if content_analyser_hash != '803b5ec7':
-		print('[FACEFUSION.CORE] Content analyser integrity check failed. Expected hash 803b5ec7 but got ' + content_analyser_hash)
+	expected_hash = 'a727ec6f'
+	if content_analyser_hash != expected_hash:
+		print('[FACEFUSION.CORE] Content analyser integrity check failed. Expected hash ' + expected_hash + ' but got ' + content_analyser_hash)
 		return False
 
 	return True
