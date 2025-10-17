@@ -79,7 +79,7 @@ def init() -> None:
 
 def launch() -> None:
 	ui_layouts_total = len(state_manager.get_item('ui_layouts'))
-	logger.info('Building Gradio interface with ' + str(ui_layouts_total) + ' layout(s)...', __name__)
+	print('[FACEFUSION.UIS.CORE] Building Gradio interface with ' + str(ui_layouts_total) + ' layout(s)...')
 	with gradio.Blocks(theme = get_theme(), css = get_css(), title = metadata.get('name') + ' ' + metadata.get('version'), fill_width = True) as ui:
 		for ui_layout in state_manager.get_item('ui_layouts'):
 			ui_layout_module = load_ui_layout_module(ui_layout)
@@ -92,11 +92,11 @@ def launch() -> None:
 				ui_layout_module.render()
 				ui_layout_module.listen()
 
-	logger.info('Starting Gradio server...', __name__)
+	print('[FACEFUSION.UIS.CORE] Starting Gradio server...')
 	for ui_layout in state_manager.get_item('ui_layouts'):
 		ui_layout_module = load_ui_layout_module(ui_layout)
 		ui_layout_module.run(ui)
-	logger.info('Gradio server started successfully.', __name__)
+	print('[FACEFUSION.UIS.CORE] Gradio server started successfully.')
 
 
 def get_theme() -> gradio.Theme:

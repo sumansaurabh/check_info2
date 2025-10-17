@@ -79,11 +79,11 @@ def route(args : Args) -> None:
 		for ui_layout in ui.get_ui_layouts_modules(state_manager.get_item('ui_layouts')):
 			if not ui_layout.pre_check():
 				hard_exit(2)
-		logger.info('Initializing user interface...', __name__)
+		print('[FACEFUSION.CORE] Initializing user interface...')
 		ui.init()
-		logger.info('Launching web interface...', __name__)
+		print('[FACEFUSION.CORE] Launching web interface...')
 		ui.launch()
-		logger.info('User interface closed.', __name__)
+		print('[FACEFUSION.CORE] User interface closed.')
 
 	if state_manager.get_item('command') == 'headless-run':
 		if not job_manager.init_jobs(state_manager.get_item('jobs_path')):
