@@ -10,3 +10,4 @@ scipy==1.16.1
 fastapi==0.115.5
 uvicorn==0.34.0
 python-multipart==0.0.20
+Pillow==10.4.0
