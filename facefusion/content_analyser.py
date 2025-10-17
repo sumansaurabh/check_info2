@@ -142,12 +142,23 @@ def analyse_frame(vision_frame : VisionFrame) -> bool:
 @lru_cache()
 def analyse_image(image_path : str) -> bool:
 	# NSFW detection disabled
+	"""Analyzes an image for NSFW content."""
 	return False
 
 
 @lru_cache()
 def analyse_video(video_path : str, trim_frame_start : int, trim_frame_end : int) -> bool:
 	# NSFW detection disabled
+	"""Analyzes a video for NSFW content.
+	
+	Args:
+	    video_path (str): The path to the video file.
+	    trim_frame_start (int): The starting frame to trim.
+	    trim_frame_end (int): The ending frame to trim.
+	
+	Returns:
+	    bool: Always returns False as NSFW detection is disabled.
+	"""
 	return False
 
 
