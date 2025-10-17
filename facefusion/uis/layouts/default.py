@@ -121,5 +121,10 @@ def listen() -> None:
 def run(ui : gradio.Blocks) -> None:
 	open_browser = state_manager.get_item('open_browser')
 	print('[FACEFUSION.UIS.LAYOUTS.DEFAULT] Starting Gradio UI (open_browser=' + str(open_browser) + ')...')
-	ui.launch(favicon_path = 'facefusion.ico', inbrowser = open_browser)
+	ui.launch(
+		favicon_path = 'facefusion.ico',
+		inbrowser = open_browser,
+		quiet = False,
+		show_error = True
+	)
 	print('[FACEFUSION.UIS.LAYOUTS.DEFAULT] Gradio UI closed.')
