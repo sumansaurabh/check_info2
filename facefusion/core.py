@@ -125,6 +125,15 @@ def pre_check() -> bool:
 
 
 def common_pre_check() -> bool:
+	"""Perform pre-checks on common modules and verify integrity.
+	
+	This function checks the status of several common modules by invoking their
+	respective pre_check methods. If any module fails the pre-check, an error
+	message is printed, and the function returns False. Additionally, it verifies
+	the integrity of the content_analyser module by comparing its hash against an
+	expected value. If the hash does not match, an error message is printed, and
+	the function returns False. If all checks pass, the function returns True.
+	"""
 	common_modules =\
 	[
 		content_analyser,
@@ -151,6 +160,7 @@ def common_pre_check() -> bool:
 
 
 def processors_pre_check() -> bool:
+	"""Perform a pre-check on processor modules and return the result."""
 	for processor_module in get_processors_modules(state_manager.get_item('processors')):
 		if not processor_module.pre_check():
 			print('[FACEFUSION.CORE] Processor pre-check failed for module: ' + getattr(processor_module, '__name__', 'unknown'))
