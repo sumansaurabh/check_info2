@@ -125,6 +125,8 @@ def run(ui : gradio.Blocks) -> None:
 		favicon_path = 'facefusion.ico',
 		inbrowser = open_browser,
 		quiet = False,
-		show_error = True
+		show_error = True,
+		server_name = '0.0.0.0',
+		server_port = 7860
 	)
 	print('[FACEFUSION.UIS.LAYOUTS.DEFAULT] Gradio UI closed.')
