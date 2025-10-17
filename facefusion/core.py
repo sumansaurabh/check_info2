@@ -74,10 +74,15 @@ def route(args : Args) -> None:
 	if state_manager.get_item('command') == 'run':
 		import facefusion.uis.core as ui
 
-		if not common_pre_check() or not processors_pre_check():
+		if not common_pre_check():
+			print('[FACEFUSION.CORE] Common pre-check failed. See messages above for details.')
+			hard_exit(2)
+		if not processors_pre_check():
+			print('[FACEFUSION.CORE] Processor pre-check failed. See messages above for details.')
 			hard_exit(2)
 		for ui_layout in ui.get_ui_layouts_modules(state_manager.get_item('ui_layouts')):
 			if not ui_layout.pre_check():
+				print('[FACEFUSION.CORE] UI pre-check failed for layout: ' + getattr(ui_layout, '__name__', 'unknown'))
 				hard_exit(2)
 		print('[FACEFUSION.CORE] Initializing user interface...')
 		ui.init()
@@ -131,15 +136,24 @@ def common_pre_check() -> bool:
 		voice_extractor
 	]
 
+	failed_modules = [module.__name__ for module in common_modules if not module.pre_check()]
+	if failed_modules:
+		print('[FACEFUSION.CORE] Common module pre-check failed for: ' + ', '.join(failed_modules))
+		return False
+
 	content_analyser_content = inspect.getsource(content_analyser).encode()
 	content_analyser_hash = hash_helper.create_hash(content_analyser_content)
+	if content_analyser_hash != '803b5ec7':
+		print('[FACEFUSION.CORE] Content analyser integrity check failed. Expected hash 803b5ec7 but got ' + content_analyser_hash)
+		return False
 
-	return all(module.pre_check() for module in common_modules) and content_analyser_hash == '803b5ec7'
+	return True
 
 
 def processors_pre_check() -> bool:
 	for processor_module in get_processors_modules(state_manager.get_item('processors')):
 		if not processor_module.pre_check():
+			print('[FACEFUSION.CORE] Processor pre-check failed for module: ' + getattr(processor_module, '__name__', 'unknown'))
 			return False
 	return True
 
