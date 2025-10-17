@@ -1,5 +1,13 @@
 from collections import namedtuple
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, TypeAlias, TypedDict
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, TypedDict
+
+try:
+	from typing import TypeAlias
+except ImportError:  # Python < 3.10
+	try:
+		from typing_extensions import TypeAlias  # type: ignore
+	except ImportError:  # typing_extensions not installed
+		TypeAlias = Any  # type: ignore
 
 import cv2
 import numpy
@@ -388,4 +396,3 @@ State = TypedDict('State',
 })
 ApplyStateItem : TypeAlias = Callable[[Any, Any], None]
 StateSet : TypeAlias = Dict[AppContext, State]
-

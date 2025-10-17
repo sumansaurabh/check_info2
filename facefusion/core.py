@@ -388,6 +388,7 @@ def conditional_process() -> ErrorCode:
 
 
 def process_image(source_paths: list[str], target_path: str, output_path: str, processors: list[str], execution_providers: list[str], execution_thread_count: int, output_image_scale: int, face_detector_model: str, face_detector_score: float, face_swapper_model: str, face_enhancer_model: str, face_enhancer_blend: int) -> ErrorCode:
+	start_time = time()
 	if analyse_image(target_path):
 		return 3
 

@@ -1,4 +1,12 @@
-from typing import Any, Dict, IO, Literal, TypeAlias
+from typing import Any, Dict, IO, Literal
+
+try:
+	from typing import TypeAlias
+except ImportError:  # Python < 3.10
+	try:
+		from typing_extensions import TypeAlias  # type: ignore
+	except ImportError:  # typing_extensions not installed
+		TypeAlias = Any  # type: ignore
 
 File : TypeAlias = IO[Any]
 ComponentName = Literal\
