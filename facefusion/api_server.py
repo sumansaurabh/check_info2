@@ -220,16 +220,15 @@ def _validate_image_file(file_path: str) -> None:
 
 def _execute_image_job(job_id: str, step_args: dict) -> None:
 	try:
-		apply_args(step_args, state_manager.set_item)
 		update_job_status(job_id, "running")
-		core_process_image(time.time())
-		output_path = state_manager.get_item('output_path')
+		core_process_image(**step_args)
+		output_path = step_args.get('output_path')
 		update_job_status(job_id, "completed", output_path=output_path)
 	except Exception as exc:
 		update_job_status(job_id, "failed", error=str(exc))
 	finally:
-		cleanup_file(state_manager.get_item('target_path'))
-		for source_path in state_manager.get_item('source_paths'):
+		cleanup_file(step_args.get('target_path'))
+		for source_path in step_args.get('source_paths', []):
 			cleanup_file(source_path)
 
 
@@ -294,7 +293,10 @@ async def process_image(
 	execution_thread_count: Optional[str] = Form(None),
 	output_image_scale: Optional[str] = Form(None),
 	face_detector_model: Optional[str] = Form(None),
-	face_detector_score: Optional[str] = Form(None)
+	face_detector_score: Optional[str] = Form(None),
+	face_swapper_model: Optional[str] = Form(None),
+	face_enhancer_model: Optional[str] = Form(None),
+	face_enhancer_blend: Optional[str] = Form(None)
 ):
 	"""
 	Process an image with specified processors
@@ -318,7 +320,10 @@ async def process_image(
 			'execution_thread_count': _ensure_int(execution_thread_count, 1, 1, 32),
 			'output_image_scale': _ensure_int(output_image_scale, 100, 10, 400),
 			'face_detector_model': face_detector_model or "yoloface_8n",
-			'face_detector_score': _ensure_float(face_detector_score, 0.5, 0.0, 1.0)
+			'face_detector_score': _ensure_float(face_detector_score, 0.5, 0.0, 1.0),
+			'face_swapper_model': face_swapper_model or 'inswapper_128',
+			'face_enhancer_model': face_enhancer_model or 'gfpgan_1.4',
+			'face_enhancer_blend': _ensure_int(face_enhancer_blend, 80, 0, 100)
 		}
 		try:
 			request = _build_process_request(request_data)

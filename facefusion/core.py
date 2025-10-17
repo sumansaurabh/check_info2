@@ -367,43 +367,56 @@ def conditional_process() -> ErrorCode:
 			return 2
 
 	if is_image(state_manager.get_item('target_path')):
-		return process_image(start_time)
+		return process_image(
+			source_paths=state_manager.get_item('source_paths'),
+			target_path=state_manager.get_item('target_path'),
+			output_path=state_manager.get_item('output_path'),
+			processors=state_manager.get_item('processors'),
+			execution_providers=state_manager.get_item('execution_providers'),
+			execution_thread_count=state_manager.get_item('execution_thread_count'),
+			output_image_scale=state_manager.get_item('output_image_scale'),
+			face_detector_model=state_manager.get_item('face_detector_model'),
+			face_detector_score=state_manager.get_item('face_detector_score'),
+			face_swapper_model=state_manager.get_item('face_swapper_model'),
+			face_enhancer_model=state_manager.get_item('face_enhancer_model'),
+			face_enhancer_blend=state_manager.get_item('face_enhancer_blend')
+		)
 	if is_video(state_manager.get_item('target_path')):
 		return process_video(start_time)
 
 	return 0
 
 
-def process_image(start_time : float) -> ErrorCode:
-	if analyse_image(state_manager.get_item('target_path')):
+def process_image(source_paths: list[str], target_path: str, output_path: str, processors: list[str], execution_providers: list[str], execution_thread_count: int, output_image_scale: int, face_detector_model: str, face_detector_score: float, face_swapper_model: str, face_enhancer_model: str, face_enhancer_blend: int) -> ErrorCode:
+	if analyse_image(target_path):
 		return 3
 
 	logger.debug(wording.get('clearing_temp'), __name__)
-	clear_temp_directory(state_manager.get_item('target_path'))
+	clear_temp_directory(target_path)
 	logger.debug(wording.get('creating_temp'), __name__)
-	create_temp_directory(state_manager.get_item('target_path'))
+	create_temp_directory(target_path)
 
 	process_manager.start()
 
-	output_image_resolution = scale_resolution(detect_image_resolution(state_manager.get_item('target_path')), state_manager.get_item('output_image_scale'))
-	temp_image_resolution = restrict_image_resolution(state_manager.get_item('target_path'), output_image_resolution)
+	output_image_resolution = scale_resolution(detect_image_resolution(target_path), output_image_scale)
+	temp_image_resolution = restrict_image_resolution(target_path, output_image_resolution)
 	logger.info(wording.get('copying_image').format(resolution = pack_resolution(temp_image_resolution)), __name__)
-	if copy_image(state_manager.get_item('target_path'), temp_image_resolution):
+	if copy_image(target_path, temp_image_resolution):
 		logger.debug(wording.get('copying_image_succeeded'), __name__)
 	else:
 		logger.error(wording.get('copying_image_failed'), __name__)
 		process_manager.end()
 		return 1
 
-	temp_image_path = get_temp_file_path(state_manager.get_item('target_path'))
+	temp_image_path = get_temp_file_path(target_path)
 	reference_vision_frame = read_static_image(temp_image_path)
-	source_vision_frames = read_static_images(state_manager.get_item('source_paths'))
+	source_vision_frames = read_static_images(source_paths)
 	source_audio_frame = create_empty_audio_frame()
 	source_voice_frame = create_empty_audio_frame()
 	target_vision_frame = read_static_image(temp_image_path)
 	temp_vision_frame = target_vision_frame.copy()
 
-	for processor_module in get_processors_modules(state_manager.get_item('processors')):
+	for processor_module in get_processors_modules(processors):
 		logger.info(wording.get('processing'), processor_module.__name__)
 
 		temp_vision_frame = processor_module.process_frame(
@@ -423,15 +436,15 @@ def process_image(start_time : float) -> ErrorCode:
 		return 4
 
 	logger.info(wording.get('finalizing_image').format(resolution = pack_resolution(output_image_resolution)), __name__)
-	if finalize_image(state_manager.get_item('target_path'), state_manager.get_item('output_path'), output_image_resolution):
+	if finalize_image(target_path, output_path, output_image_resolution):
 		logger.debug(wording.get('finalizing_image_succeeded'), __name__)
 	else:
 		logger.warn(wording.get('finalizing_image_skipped'), __name__)
 
 	logger.debug(wording.get('clearing_temp'), __name__)
-	clear_temp_directory(state_manager.get_item('target_path'))
+	clear_temp_directory(target_path)
 
-	if is_image(state_manager.get_item('output_path')):
+	if is_image(output_path):
 		logger.info(wording.get('processing_image_succeeded').format(seconds = calculate_end_time(start_time)), __name__)
 	else:
 		logger.error(wording.get('processing_image_failed'), __name__)
