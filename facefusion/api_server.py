@@ -132,10 +132,10 @@ def map_job_status(job: dict) -> JobStatus:
 	)
 
 
-def execute_job(job_id: str, job_type: str, step_args: Args, target_path: str, source_path: Optional[str]) -> None:
+def execute_job(job_id: str, job_type: str, step_args: Args, target_path: str, source_path: Optional[str], log_level: str) -> None:
 	"""Execute a queued job and maintain status lifecycle."""
 	try:
-		logger.init(state_manager.get_item('log_level'))
+		logger.init(log_level)
 		logger.info(f"[FACEFUSION.API] Running {job_type} job {job_id}", __name__)
 		update_job_status(job_id, "running")
 
@@ -295,8 +295,8 @@ async def process_image(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-		background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path)
-		job_queued = True
+		        log_level = state_manager.get_item('log_level') or 'info'
+		        background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path, log_level)		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
 
 	except HTTPException as exc:
@@ -399,7 +399,8 @@ async def process_video(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-		background_tasks.add_task(execute_job, job_id, "video", step_args, target_path, source_path)
+			log_level = state_manager.get_item('log_level') or 'info'
+		background_tasks.add_task(execute_job, job_id, "video", step_args, target_path, source_path, log_level)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
 
@@ -479,7 +480,6 @@ async def delete_output(filename: str):
 def launch_api(host: str = "0.0.0.0", port: int = 8000):
 	"""Launch the FastAPI server"""
 	import uvicorn
-	state_manager.init_item('log_level', 'info')
 	print(f"[FACEFUSION.API] Starting FastAPI server on {host}:{port}")
 	print(f"[FACEFUSION.API] API docs available at http://{host}:{port}/docs")
 	uvicorn.run(app, host=host, port=port)
