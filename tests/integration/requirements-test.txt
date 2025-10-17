@@ -1,0 +1,21 @@
+# Integration Test Dependencies
+# Install with: pip install -r requirements-test.txt
+
+# Core testing framework
+pytest>=8.0.0
+pytest-asyncio>=0.21.0
+
+# HTTP client for API testing
+requests>=2.31.0
+
+# Image processing for fixture validation
+Pillow>=10.0.0
+
+# Optional: Code coverage (uncomment if needed)
+# pytest-cov>=4.1.0
+
+# Optional: Test timeout (uncomment if needed)
+# pytest-timeout>=2.1.0
+
+# Optional: Parallel test execution (uncomment if needed)
+# pytest-xdist>=3.3.0
