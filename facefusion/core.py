@@ -114,9 +114,7 @@ def route(args : Args) -> None:
 			print('[FACEFUSION.CORE] Common pre-check failed. See messages above for details.')
 			hard_exit(2)
 		print('[FACEFUSION.API] Starting REST API server...')
-		api_host = state_manager.get_item('api_host') or '0.0.0.0'
-		api_port = state_manager.get_item('api_port') or 8000
-		launch_api(host=api_host, port=api_port)
+		launch_api(host='0.0.0.0', port=8000)
 
 
 def pre_check() -> bool:
