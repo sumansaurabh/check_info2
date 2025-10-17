@@ -108,6 +108,17 @@ def route(args : Args) -> None:
 		error_code = route_job_runner()
 		hard_exit(error_code)
 
+	if state_manager.get_item('command') == 'api':
+		from facefusion.api_server import launch_api
+		if not common_pre_check():
+			print('[FACEFUSION.CORE] Common pre-check failed. See messages above for details.')
+			hard_exit(2)
+		print('[FACEFUSION.API] Starting REST API server...')
+		launch_api(
+			host=state_manager.get_item('api_host', '0.0.0.0'),
+			port=state_manager.get_item('api_port', 8000)
+		)
+
 
 def pre_check() -> bool:
 	if sys.version_info < (3, 10):

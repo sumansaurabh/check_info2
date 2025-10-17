@@ -53,7 +53,7 @@ After starting with the updated configuration:
   ssh -L 7860:localhost:7860 ubuntu@129.146.117.178
   ```
   Then open: http://localhost:7860
-  
+
 - **Directly from network** (if firewall allows):
   ```
   http://129.146.117.178:7860
