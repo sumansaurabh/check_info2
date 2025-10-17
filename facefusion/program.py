@@ -227,6 +227,15 @@ def create_benchmark_program() -> ArgumentParser:
 	return program
 
 
+def create_api_program() -> ArgumentParser:
+	program = ArgumentParser(add_help = False)
+	group_api = program.add_argument_group('api')
+	group_api.add_argument('--api-host', help = 'host address for the API server', default = '0.0.0.0')
+	group_api.add_argument('--api-port', help = 'port number for the API server', type = int, default = 8000)
+	job_store.register_job_keys([ 'api_host', 'api_port' ])
+	return program
+
+
 def create_execution_program() -> ArgumentParser:
 	program = ArgumentParser(add_help = False)
 	available_execution_providers = get_available_execution_providers()
@@ -302,7 +311,7 @@ def create_program() -> ArgumentParser:
 	sub_program.add_parser('force-download', help = wording.get('help.force_download'), parents = [ create_download_providers_program(), create_download_scope_program(), create_log_level_program() ], formatter_class = create_help_formatter_large)
 	sub_program.add_parser('benchmark', help = wording.get('help.benchmark'), parents = [ create_temp_path_program(), collect_step_program(), create_benchmark_program(), collect_job_program() ], formatter_class = create_help_formatter_large)
 	# api
-	sub_program.add_parser('api', help = 'run the REST API server', parents = [ create_config_path_program(), create_temp_path_program(), create_jobs_path_program(), create_download_providers_program(), create_log_level_program() ], formatter_class = create_help_formatter_large)
+	sub_program.add_parser('api', help = 'run the REST API server', parents = [ create_config_path_program(), create_temp_path_program(), create_jobs_path_program(), create_download_providers_program(), create_api_program(), create_log_level_program() ], formatter_class = create_help_formatter_large)
 	# job manager
 	sub_program.add_parser('job-list', help = wording.get('help.job_list'), parents = [ create_job_status_program(), create_jobs_path_program(), create_log_level_program() ], formatter_class = create_help_formatter_large)
 	sub_program.add_parser('job-create', help = wording.get('help.job_create'), parents = [ create_job_id_program(), create_jobs_path_program(), create_log_level_program() ], formatter_class = create_help_formatter_large)
