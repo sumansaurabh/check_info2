@@ -24,7 +24,7 @@ from facefusion.env_helper import load_env
 
 load_env()
 
-from facefusion.api_job_store import (  # noqa: E402
+from facefusion.api_job_store import (
 	create_job,
 	get_job,
 	init_db,
@@ -32,6 +32,9 @@ from facefusion.api_job_store import (  # noqa: E402
 	update_job_status
 )
 from facefusion.filesystem import get_file_name, resolve_file_paths  # noqa: E402
+from facefusion.core import process_image as core_process_image, process_video as core_process_video
+from facefusion.args import apply_args
+from facefusion import state_manager
 
 init_db()
 
@@ -212,45 +215,37 @@ def _validate_image_file(file_path: str) -> None:
 		raise HTTPException(status_code=400, detail=f"Failed to read image: {exc}") from exc
 
 
-def _process_image_file(source_path: str, output_path: str, scale_percent: int) -> None:
-	with Image.open(source_path) as img:
-		img = img.convert("RGB")
-		if scale_percent != 100:
-			scale = max(10, scale_percent) / 100.0
-			width = max(1, int(img.width * scale))
-			height = max(1, int(img.height * scale))
-			img = img.resize((width, height), Image.LANCZOS)
-		img.save(output_path, format="JPEG", quality=90)
 
 
-def _process_video_file(source_path: str, output_path: str) -> None:
-	shutil.copy(source_path, output_path)
 
-
-def _execute_image_job(job_id: str, target_path: str, source_path: Optional[str], output_path: str, scale: int) -> None:
+def _execute_image_job(job_id: str, step_args: dict) -> None:
 	try:
+		apply_args(step_args, state_manager.set_item)
 		update_job_status(job_id, "running")
-		time.sleep(0.5)
-		_process_image_file(target_path, output_path, scale)
+		core_process_image(time.time())
+		output_path = state_manager.get_item('output_path')
 		update_job_status(job_id, "completed", output_path=output_path)
 	except Exception as exc:
 		update_job_status(job_id, "failed", error=str(exc))
 	finally:
-		cleanup_file(target_path)
-		cleanup_file(source_path)
+		cleanup_file(state_manager.get_item('target_path'))
+		for source_path in state_manager.get_item('source_paths'):
+			cleanup_file(source_path)
 
 
-def _execute_video_job(job_id: str, target_path: str, source_path: Optional[str], output_path: str) -> None:
+def _execute_video_job(job_id: str, step_args: dict) -> None:
 	try:
+		apply_args(step_args, state_manager.set_item)
 		update_job_status(job_id, "running")
-		time.sleep(0.5)
-		_process_video_file(target_path, output_path)
+		core_process_video(time.time())
+		output_path = state_manager.get_item('output_path')
 		update_job_status(job_id, "completed", output_path=output_path)
 	except Exception as exc:
 		update_job_status(job_id, "failed", error=str(exc))
 	finally:
-		cleanup_file(target_path)
-		cleanup_file(source_path)
+		cleanup_file(state_manager.get_item('target_path'))
+		for source_path in state_manager.get_item('source_paths'):
+			cleanup_file(source_path)
 
 
 # ---------------------------------------------------------------------------
@@ -344,13 +339,15 @@ async def process_image(
 		create_job(job_id, "image", target_path, source_path, output_path)
 		update_job_status(job_id, "queued")
 
+		step_args = request_data.copy()
+		step_args['source_paths'] = [source_path] if source_path else []
+		step_args['target_path'] = target_path
+		step_args['output_path'] = output_path
+
 		background_tasks.add_task(
 			_execute_image_job,
 			job_id,
-			target_path,
-			source_path,
-			output_path,
-			request.output_image_scale
+			step_args
 		)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
@@ -420,12 +417,15 @@ async def process_video(
 		create_job(job_id, "video", target_path, source_path, output_path)
 		update_job_status(job_id, "queued")
 
+		step_args = request_data.copy()
+		step_args['source_paths'] = [source_path] if source_path else []
+		step_args['target_path'] = target_path
+		step_args['output_path'] = output_path
+
 		background_tasks.add_task(
 			_execute_video_job,
 			job_id,
-			target_path,
-			source_path,
-			output_path
+			step_args
 		)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
