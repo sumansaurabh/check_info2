@@ -27,7 +27,7 @@ from facefusion.api_job_store import (  # noqa: E402
 )
 from facefusion.args import apply_args  # noqa: E402
 from facefusion.core import common_pre_check, process_step, processors_pre_check  # noqa: E402
-from facefusion.filesystem import is_image, is_video  # noqa: E402
+from facefusion.filesystem import get_file_name, is_image, is_video, resolve_file_paths  # noqa: E402
 from facefusion.jobs import job_helper, job_manager, job_runner  # noqa: E402
 from facefusion.processors.core import get_processors_modules  # noqa: E402
 from facefusion.types import Args  # noqa: E402
@@ -175,8 +175,7 @@ async def health_check():
 	"""Health check endpoint"""
 	try:
 		# Get available processors
-		from facefusion import choices
-		processors_available = choices.processors
+		processors_available = [get_file_name(file_path) for file_path in resolve_file_paths('facefusion/processors/modules')]
 
 		return HealthResponse(
 			status="healthy",
@@ -191,10 +190,11 @@ async def health_check():
 async def list_processors():
 	"""List available processors and their status"""
 	try:
-		from facefusion import choices
+		# Get available processors from the modules directory
+		available_processors = [get_file_name(file_path) for file_path in resolve_file_paths('facefusion/processors/modules')]
 		processors = []
 
-		for processor_name in choices.processors:
+		for processor_name in available_processors:
 			try:
 				# Try to load processor module
 				state_manager.set_item('processors', [processor_name])
