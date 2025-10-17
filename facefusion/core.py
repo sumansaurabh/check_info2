@@ -51,6 +51,17 @@ def cli() -> None:
 
 
 def route(args : Args) -> None:
+	"""Route commands based on the provided arguments.
+	
+	This function manages various commands by checking the state manager for the
+	current command and executing the appropriate logic. It handles system memory
+	limits, performs pre-checks for benchmarking and UI initialization, and routes
+	job management commands. Each command may lead to a hard exit based on the
+	success or failure of the operations performed.
+	
+	Args:
+	    args (Args): The arguments to be processed for the command routing.
+	"""
 	system_memory_limit = state_manager.get_item('system_memory_limit')
 
 	if system_memory_limit and system_memory_limit > 0:
