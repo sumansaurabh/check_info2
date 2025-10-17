@@ -125,6 +125,15 @@ def pre_check() -> bool:
 
 
 def common_pre_check() -> bool:
+	"""Perform pre-checks on common modules and verify integrity.
+	
+	This function checks the status of several common modules by invoking their
+	respective pre_check methods. If any module fails the pre-check, an error
+	message is printed, and the function returns False. Additionally, it verifies
+	the integrity of the content_analyser module by comparing its hash against an
+	expected value. If the hash does not match, an error message is printed, and
+	the function returns False. If all checks pass, the function returns True.
+	"""
 	common_modules =\
 	[
 		content_analyser,
