@@ -295,8 +295,9 @@ async def process_image(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-		        log_level = state_manager.get_item('log_level') or 'info'
-		        background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path, log_level)		job_queued = True
+		log_level = state_manager.get_item('log_level') or 'info'
+		background_tasks.add_task(execute_job, job_id, "image", step_args, target_path, source_path, log_level)
+		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
 
 	except HTTPException as exc:
@@ -399,7 +400,7 @@ async def process_video(
 			raise HTTPException(status_code=500, detail="Failed to submit job")
 
 		update_job_status(job_id, "queued")
-			log_level = state_manager.get_item('log_level') or 'info'
+		log_level = state_manager.get_item('log_level') or 'info'
 		background_tasks.add_task(execute_job, job_id, "video", step_args, target_path, source_path, log_level)
 		job_queued = True
 		return JobStatus(job_id=job_id, status="queued")
