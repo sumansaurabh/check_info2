@@ -119,4 +119,7 @@ def listen() -> None:
 
 
 def run(ui : gradio.Blocks) -> None:
-	ui.launch(favicon_path = 'facefusion.ico', inbrowser = state_manager.get_item('open_browser'))
+	from facefusion import logger
+	open_browser = state_manager.get_item('open_browser')
+	logger.info('Starting Gradio UI (open_browser=' + str(open_browser) + ')...', __name__)
+	ui.launch(favicon_path = 'facefusion.ico', inbrowser = open_browser)
