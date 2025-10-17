@@ -105,7 +105,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -v|--verbose)
-            TEST_ARGS+=("-v" "-s")
+            TEST_ARGS+=("-s")
             shift
             ;;
         -h|--help)

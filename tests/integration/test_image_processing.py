@@ -104,7 +104,12 @@ class TestImageProcessing:
 		performance_tracker.start("download")
 
 		output_filename = Path(final_status["output_path"]).name
-		local_output = Path("/tmp") / f"facefusion_test_{output_filename}"
+		# Save to current directory for easy access
+		test_output_dir = Path.cwd() / "test_outputs"
+		test_output_dir.mkdir(exist_ok=True)
+		local_output = test_output_dir / f"result_{output_filename}"
+
+		# Also track for cleanup
 		cleanup_outputs.append(str(local_output))
 
 		downloaded_path = download_output(
@@ -120,6 +125,7 @@ class TestImageProcessing:
 		print(f"  ✓ Downloaded to: {downloaded_path}")
 		print(f"  ⏱ Download time: {download_time:.3f}s")
 		print(f"  📊 File size: {downloaded_path.stat().st_size / 1024:.1f} KB")
+		print(f"\n  🖼️  VIEW YOUR RESULT: open {downloaded_path}")
 
 		# Step 4: Verify output
 		print(f"\n[4/4] Verifying output image...")
@@ -269,7 +275,9 @@ class TestImageProcessing:
 
 		# Download and verify output
 		output_filename = Path(final_status["output_path"]).name
-		local_output = Path("/tmp") / f"facefusion_test_custom_{output_filename}"
+		test_output_dir = Path.cwd() / "test_outputs"
+		test_output_dir.mkdir(exist_ok=True)
+		local_output = test_output_dir / f"result_custom_{output_filename}"
 		cleanup_outputs.append(str(local_output))
 
 		downloaded_path = download_output(
@@ -281,3 +289,4 @@ class TestImageProcessing:
 
 		verify_image_output(downloaded_path, min_size_kb=10)
 		print(f"  ✓ Output verified (scale 150%)")
+		print(f"  🖼️  VIEW YOUR RESULT: open {downloaded_path}")

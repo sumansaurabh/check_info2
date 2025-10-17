@@ -2,6 +2,7 @@
 
 ## 📚 Quick Navigation
 
+- **[HOW_TO_RUN.md](HOW_TO_RUN.md)** - 🔥 **START HERE** - How to see test output and view generated images
 - **[QUICKSTART.md](QUICKSTART.md)** - Get started in 3 steps
 - **[README.md](README.md)** - Complete documentation
 - **[SUMMARY.md](SUMMARY.md)** - What was built and why
