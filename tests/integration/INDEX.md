@@ -34,12 +34,12 @@ cp target.jpg ../fixtures/target.jpg
 
 ## 🎯 Key Features
 
-✅ Real integration tests (not mocked)  
-✅ Complete face swap workflows  
-✅ Performance benchmarks built-in  
-✅ Automatic cleanup  
-✅ Rich terminal output  
-✅ Production-ready  
+✅ Real integration tests (not mocked)
+✅ Complete face swap workflows
+✅ Performance benchmarks built-in
+✅ Automatic cleanup
+✅ Rich terminal output
+✅ Production-ready
 
 ## 📖 Documentation
 
@@ -61,7 +61,7 @@ python facefusion.py api --api-host 0.0.0.0 --api-port 8000
 integration/
 ├── conftest.py              # Test fixtures & helpers
 ├── test_health.py           # Health & processor tests
-├── test_image_processing.py # Image face swap tests  
+├── test_image_processing.py # Image face swap tests
 ├── test_video_processing.py # Video face swap tests
 ├── test_jobs.py             # Job management tests
 ├── test_file_operations.py  # File operation tests
